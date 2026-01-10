@@ -1,23 +1,43 @@
 import React, { useMemo, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Vibration } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
-import { TeamHeader } from '../components/TeamHeader';
+import { Card } from '../components/ui/Card';
+import { Chip } from '../components/ui/Chip';
+import { EmptyState } from '../components/ui/EmptyState';
+import { TeamHeader } from '../components/ui/TeamHeader';
+import { Toast } from '../components/ui/Toast';
 import { Event, RSVPStatus } from '../models/types';
 import { useAppContext } from '../store/AppContext';
-import { theme } from '../utils/theme';
+import { theme } from '../theme';
 
 const rsvpOptions: RSVPStatus[] = ['Going', 'Maybe', 'No'];
 
+const getGroupLabel = (date: Date) => {
+  const now = new Date();
+  const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 7) {
+    return 'This Week';
+  }
+  if (diffDays <= 14) {
+    return 'Next Week';
+  }
+  return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+};
+
 export const ScheduleScreen: React.FC = () => {
   const { events, setRsvp, currentMemberId } = useAppContext();
-  const [selected, setSelected] = useState<Event | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
 
-  const sortedEvents = useMemo(
-    () => [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
-    [events]
-  );
+  const groupedEvents = useMemo(() => {
+    const sorted = [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+    return sorted.reduce<Record<string, Event[]>>((acc, event) => {
+      const label = getGroupLabel(new Date(event.startsAt));
+      acc[label] = acc[label] ? [...acc[label], event] : [event];
+      return acc;
+    }, {});
+  }, [events]);
+
+  const groupLabels = Object.keys(groupedEvents);
 
   const getCounts = (event: Event) => {
     return rsvpOptions.reduce(
@@ -32,58 +52,57 @@ export const ScheduleScreen: React.FC = () => {
   const currentStatus = (event: Event) =>
     event.rsvps.find((rsvp) => rsvp.memberId === currentMemberId)?.status;
 
+  const handleRsvp = (eventId: string, status: RSVPStatus) => {
+    setRsvp(eventId, status);
+    Vibration.vibrate(10);
+    setToastMessage(`RSVP set to ${status}`);
+    setTimeout(() => setToastMessage(''), 1800);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <TeamHeader subtitle="Schedule" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {sortedEvents.map((event) => {
-          const counts = getCounts(event);
-          return (
-            <TouchableOpacity key={event.id} onPress={() => setSelected(event)}>
-              <Card style={styles.card}>
-                <Text style={styles.title}>{event.title}</Text>
-                <Text style={styles.meta}>{event.location}</Text>
-                <Text style={styles.meta}>{new Date(event.startsAt).toLocaleString()}</Text>
-                <View style={styles.rsvpRow}>
-                  {rsvpOptions.map((status) => (
-                    <Text key={status} style={styles.meta}>
-                      {status}: {counts[status]}
-                    </Text>
-                  ))}
-                </View>
-              </Card>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      <Modal visible={!!selected} transparent animationType="slide">
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
-            {selected && (
-              <>
-                <Text style={styles.modalTitle}>{selected.title}</Text>
-                <Text style={styles.meta}>{selected.location}</Text>
-                <Text style={styles.meta}>{new Date(selected.startsAt).toLocaleString()}</Text>
-                {selected.notes && <Text style={styles.notes}>{selected.notes}</Text>}
-                <Text style={styles.sectionTitle}>RSVP</Text>
-                <View style={styles.rsvpButtons}>
-                  {rsvpOptions.map((status) => (
-                    <Button
-                      key={status}
-                      label={status}
-                      onPress={() => setRsvp(selected.id, status)}
-                      variant={currentStatus(selected) === status ? 'secondary' : 'ghost'}
-                      style={styles.rsvpButton}
-                    />
-                  ))}
-                </View>
-                <Button label="Close" onPress={() => setSelected(null)} />
-              </>
-            )}
+        {events.length === 0 && (
+          <EmptyState
+            title="No events yet"
+            message="Upcoming practices and games will appear here."
+          />
+        )}
+        {groupLabels.map((label) => (
+          <View key={label} style={styles.group}>
+            <Text style={styles.groupLabel}>{label}</Text>
+            {groupedEvents[label].map((event) => {
+              const counts = getCounts(event);
+              const status = currentStatus(event);
+              return (
+                <Card key={event.id} style={styles.card}>
+                  <Text style={styles.title}>{event.title}</Text>
+                  <Text style={styles.meta}>{event.location}</Text>
+                  <Text style={styles.meta}>
+                    {new Date(event.startsAt).toLocaleString()}
+                  </Text>
+                  <View style={styles.rsvpRow}>
+                    {rsvpOptions.map((option) => (
+                      <Chip
+                        key={option}
+                        label={`${option} • ${counts[option]}`}
+                        active={status === option}
+                        onPress={() => handleRsvp(event.id, option)}
+                        style={styles.rsvpChip}
+                      />
+                    ))}
+                  </View>
+                  <Text style={styles.youStatus}>
+                    You: {status ?? 'No response yet'}
+                  </Text>
+                </Card>
+              );
+            })}
           </View>
-        </View>
-      </Modal>
+        ))}
+      </ScrollView>
+      <Toast message={toastMessage} visible={!!toastMessage} />
     </SafeAreaView>
   );
 };
@@ -94,7 +113,18 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   scroll: {
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl,
+  },
+  group: {
+    marginBottom: theme.spacing.lg,
+  },
+  groupLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase',
+    marginBottom: theme.spacing.sm,
   },
   card: {
     marginBottom: theme.spacing.md,
@@ -102,44 +132,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.textPrimary,
   },
   meta: {
-    color: theme.colors.muted,
+    color: theme.colors.textSecondary,
   },
   rsvpRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.sm,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  modal: {
-    backgroundColor: theme.colors.card,
-    padding: theme.spacing.lg,
-    borderTopLeftRadius: theme.radius.lg,
-    borderTopRightRadius: theme.radius.lg,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  notes: {
-    marginVertical: theme.spacing.sm,
-  },
-  sectionTitle: {
+    flexWrap: 'wrap',
     marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    fontWeight: '600',
   },
-  rsvpButtons: {
-    flexDirection: 'row',
-    marginBottom: theme.spacing.md,
-  },
-  rsvpButton: {
+  rsvpChip: {
     marginRight: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  youStatus: {
+    color: theme.colors.textSecondary,
+    fontSize: 12,
   },
 });

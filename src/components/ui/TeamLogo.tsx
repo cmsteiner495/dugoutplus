@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { TEAM_LOGO } from '../assets';
-import { theme } from '../utils/theme';
+import { TEAM_LOGO } from '../../assets';
+import { theme } from '../../theme';
 
 interface TeamLogoProps {
   size?: number;
@@ -9,18 +9,20 @@ interface TeamLogoProps {
 
 export const TeamLogo: React.FC<TeamLogoProps> = ({ size = 52 }) => {
   const [logoError, setLogoError] = useState(false);
-  const initials = useMemo(() => 'ST', []);
+  const initials = useMemo(() => 'SB', []);
+  const innerSize = size - 6;
+  const radius = size * 0.38;
 
   return (
-    <View style={[styles.logoWrap, { width: size, height: size, borderRadius: size * 0.3 }]}>
+    <View style={[styles.logoWrap, { width: size, height: size, borderRadius: radius }]}>
       {logoError ? (
-        <View style={[styles.fallback, { width: size - 6, height: size - 6, borderRadius: size * 0.3 }]}>
+        <View style={[styles.fallback, { width: innerSize, height: innerSize, borderRadius: radius }]}> 
           <Text style={styles.fallbackText}>{initials}</Text>
         </View>
       ) : (
         <Image
           source={TEAM_LOGO}
-          style={{ width: size - 6, height: size - 6, borderRadius: size * 0.3 }}
+          style={{ width: innerSize, height: innerSize, borderRadius: radius }}
           onError={() => setLogoError(true)}
         />
       )}
@@ -30,7 +32,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ size = 52 }) => {
 
 const styles = StyleSheet.create({
   logoWrap: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -40,10 +42,10 @@ const styles = StyleSheet.create({
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.nearBlack,
   },
   fallbackText: {
-    color: '#fff',
+    color: theme.colors.primaryGold,
     fontWeight: '700',
   },
 });

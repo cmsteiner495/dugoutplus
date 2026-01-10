@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { theme } from '../utils/theme';
+import { theme } from '../../theme';
 
 interface ButtonProps {
   label: string;
@@ -22,6 +22,7 @@ export const Button: React.FC<ButtonProps> = ({
       style={[styles.base, styles[variant], disabled && styles.disabled, style]}
       onPress={onPress}
       disabled={disabled}
+      activeOpacity={0.8}
     >
       <Text style={[styles.text, styles[`${variant}Text`]]}>{label}</Text>
     </TouchableOpacity>
@@ -31,15 +32,16 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
   base: {
     paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radius.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.radius.medium,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   primary: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryGold,
   },
   secondary: {
-    backgroundColor: theme.colors.secondary,
+    backgroundColor: theme.colors.nearBlack,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -51,14 +53,15 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   primaryText: {
-    color: '#fff',
+    color: theme.colors.nearBlack,
   },
   secondaryText: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   ghostText: {
-    color: theme.colors.text,
+    color: theme.colors.textPrimary,
   },
 });
