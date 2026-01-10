@@ -1,0 +1,35 @@
+export const theme = {
+  colors: {
+    background: '#F7F8FA',
+    card: '#FFFFFF',
+    text: '#1B1E28',
+    muted: '#6B7280',
+    primary: '#1E3A8A',
+    secondary: '#2563EB',
+    accent: '#F97316',
+    border: '#E5E7EB',
+    success: '#16A34A',
+    warning: '#F59E0B',
+    danger: '#DC2626',
+  },
+  spacing: {
+    xs: 6,
+    sm: 10,
+    md: 16,
+    lg: 24,
+    xl: 32,
+  },
+  radius: {
+    sm: 8,
+    md: 12,
+    lg: 16,
+    round: 999,
+  },
+  shadow: {
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+};
