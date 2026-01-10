@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Dugout",
+    "slug": "dugout",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "icon": "./src/assets/SingLogo.png",
+    "splash": {
+      "image": "./src/assets/SingLogo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/SingLogo.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./src/assets/SingLogo.png"
+    }
+  }
+}
