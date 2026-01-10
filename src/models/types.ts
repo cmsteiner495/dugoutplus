@@ -1,4 +1,4 @@
-export type Role = 'Coach' | 'Staff' | 'Parent';
+export type Role = 'coach' | 'staff' | 'parent';
 
 export interface Team {
   id: string;

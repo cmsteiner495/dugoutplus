@@ -2,15 +2,15 @@ import { AnnouncementMessage, Channel, Event, Member, Message, Reply, Team } fro
 
 export const team: Team = {
   id: 'team-1',
-  name: 'Springfield Tigers',
+  name: 'Sting Baseball Club',
   season: 'Spring 2025',
 };
 
 export const members: Member[] = [
-  { id: 'm1', name: 'Coach Taylor', role: 'Coach' },
-  { id: 'm2', name: 'Jordan Miles', role: 'Staff', authorized: true },
-  { id: 'm3', name: 'Sam Patel', role: 'Staff', authorized: false },
-  { id: 'm4', name: 'Alex Morgan', role: 'Parent' },
+  { id: 'm1', name: 'Coach Taylor', role: 'coach' },
+  { id: 'm2', name: 'Jordan Miles', role: 'staff', authorized: true },
+  { id: 'm3', name: 'Sam Patel', role: 'staff', authorized: false },
+  { id: 'm4', name: 'Alex Morgan', role: 'parent' },
 ];
 
 export const channels: Channel[] = [

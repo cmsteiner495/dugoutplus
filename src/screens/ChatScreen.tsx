@@ -8,16 +8,20 @@ import {
   Text,
   TextInput,
   View,
+  Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../components/Button';
 import { ChannelPills } from '../components/ChannelPills';
 import { MessageItem } from '../components/MessageItem';
-import { TeamHeader } from '../components/TeamHeader';
 import { ThreadModal } from '../components/ThreadModal';
 import { AnnouncementMessage } from '../models/types';
 import { useAppContext } from '../store/AppContext';
-import { theme } from '../utils/theme';
+import { theme } from '../theme';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
+import { TeamHeader } from '../components/ui/TeamHeader';
+import { Toast } from '../components/ui/Toast';
 
 export const ChatScreen: React.FC = () => {
   const {
@@ -36,6 +40,7 @@ export const ChatScreen: React.FC = () => {
   const [activeChannelId, setActiveChannelId] = useState(channels[0]?.id ?? '');
   const [composer, setComposer] = useState('');
   const [threadMessageId, setThreadMessageId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
 
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
@@ -46,12 +51,14 @@ export const ChatScreen: React.FC = () => {
   const isOfficialChannel = channels.find((c) => c.id === activeChannelId)?.isOfficial;
   const currentMember = members.find((member) => member.id === currentMemberId);
   const canPostAnnouncement =
-    role === 'Coach' || (role === 'Staff' && currentMember?.authorized);
+    role === 'coach' || (role === 'staff' && currentMember?.authorized);
 
   const filteredMessages = useMemo(
     () => messages.filter((message) => message.channelId === activeChannelId),
     [messages, activeChannelId]
   );
+
+  const activeMessage = messages.find((message) => message.id === threadMessageId);
 
   const handleSend = () => {
     if (!composer.trim()) {
@@ -81,6 +88,15 @@ export const ChatScreen: React.FC = () => {
     setRequiresConfirmation(true);
     setAttachments('');
     setComposer('');
+    setToastMessage('Announcement posted');
+    setTimeout(() => setToastMessage(''), 1800);
+  };
+
+  const handleConfirm = (messageId: string) => {
+    confirmAnnouncement(messageId);
+    Vibration.vibrate(10);
+    setToastMessage('Confirmation recorded');
+    setTimeout(() => setToastMessage(''), 1800);
   };
 
   return (
@@ -90,8 +106,20 @@ export const ChatScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scroll}>
         {isOfficialChannel && (
           <View style={styles.identityBar}>
-            <Text style={styles.identityText}>Official announcements</Text>
+            <Text style={styles.identityText}>Official announcements channel</Text>
+            <Text style={styles.identitySubtext}>Staff and coaches can post updates.</Text>
           </View>
+        )}
+
+        {filteredMessages.length === 0 && (
+          <EmptyState
+            title="No messages yet"
+            message={
+              isOfficialChannel
+                ? 'Official announcements will appear here once posted.'
+                : 'Kick off the conversation with your team.'
+            }
+          />
         )}
 
         {filteredMessages.map((message) => (
@@ -100,53 +128,57 @@ export const ChatScreen: React.FC = () => {
             message={message}
             author={members.find((member) => member.id === message.authorId)}
             onOpenThread={setThreadMessageId}
-            onConfirm={confirmAnnouncement}
+            onConfirm={handleConfirm}
             currentMemberId={currentMemberId}
+            totalMembers={members.length}
           />
         ))}
       </ScrollView>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {isOfficialChannel && canPostAnnouncement && (
-          <View style={styles.announcementComposer}>
-            <Text style={styles.sectionTitle}>Create announcement</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Title (required)"
-              value={title}
-              onChangeText={setTitle}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Tag"
-              value={tag}
-              onChangeText={setTag}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Body"
-              value={composer}
-              onChangeText={setComposer}
-              multiline
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Attachments placeholder (comma separated)"
-              value={attachments}
-              onChangeText={setAttachments}
-            />
-            <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Pinned</Text>
-              <Switch value={pinned} onValueChange={setPinned} />
-            </View>
-            <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Require confirmation</Text>
-              <Switch value={requiresConfirmation} onValueChange={setRequiresConfirmation} />
-            </View>
-            <Button label="Post announcement" onPress={handleAnnouncement} />
-          </View>
-        )}
-        {!isOfficialChannel && (
+        {isOfficialChannel ? (
+          canPostAnnouncement ? (
+            <Card style={styles.announcementComposer}>
+              <Text style={styles.sectionTitle}>Create announcement</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Title (required)"
+                value={title}
+                onChangeText={setTitle}
+              />
+              <TextInput style={styles.input} placeholder="Tag" value={tag} onChangeText={setTag} />
+              <TextInput
+                style={[styles.input, styles.inputBody]}
+                placeholder="Body"
+                value={composer}
+                onChangeText={setComposer}
+                multiline
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Attachments placeholder (comma separated)"
+                value={attachments}
+                onChangeText={setAttachments}
+              />
+              <View style={styles.toggleRow}>
+                <Text style={styles.toggleLabel}>Pinned</Text>
+                <Switch value={pinned} onValueChange={setPinned} />
+              </View>
+              <View style={styles.toggleRow}>
+                <Text style={styles.toggleLabel}>Require confirmation</Text>
+                <Switch value={requiresConfirmation} onValueChange={setRequiresConfirmation} />
+              </View>
+              <Button label="Post announcement" onPress={handleAnnouncement} />
+            </Card>
+          ) : (
+            <Card style={styles.restrictedCard}>
+              <Text style={styles.sectionTitle}>Create announcement</Text>
+              <Text style={styles.restrictedText}>
+                Only coaches/authorized staff can post official updates.
+              </Text>
+            </Card>
+          )
+        ) : (
           <View style={styles.composer}>
             <TextInput
               style={styles.input}
@@ -164,12 +196,16 @@ export const ChatScreen: React.FC = () => {
         onClose={() => setThreadMessageId(null)}
         replies={replies.filter((reply) => reply.messageId === threadMessageId)}
         members={members}
+        message={activeMessage}
+        totalMembers={members.length}
         onSend={(content) => {
           if (threadMessageId) {
             addReply(threadMessageId, content);
           }
         }}
       />
+
+      <Toast message={toastMessage} visible={!!toastMessage} />
     </SafeAreaView>
   );
 };
@@ -180,36 +216,45 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   scroll: {
-    padding: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl,
   },
   identityBar: {
-    padding: theme.spacing.sm,
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.mutedGold,
+    borderRadius: theme.radius.medium,
     marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.primaryGold,
   },
   identityText: {
-    color: theme.colors.primary,
-    fontWeight: '600',
+    color: theme.colors.nearBlack,
+    fontWeight: '700',
+  },
+  identitySubtext: {
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
   },
   announcementComposer: {
-    padding: theme.spacing.md,
-    borderTopWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   sectionTitle: {
     fontWeight: '700',
     marginBottom: theme.spacing.sm,
+    color: theme.colors.textPrimary,
   },
   input: {
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.sm,
+    borderRadius: theme.radius.medium,
+    padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.card,
+  },
+  inputBody: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   toggleRow: {
     flexDirection: 'row',
@@ -219,11 +264,19 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   composer: {
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     borderTopWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.card,
+  },
+  restrictedCard: {
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  restrictedText: {
+    color: theme.colors.textSecondary,
   },
 });
