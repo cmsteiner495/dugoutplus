@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppContext } from '../../store/AppContext';
 import { theme } from '../../theme';
 import { Chip } from './Chip';
+import { ModeBannerToast } from './ModeBannerToast';
 import { TeamLogo } from './TeamLogo';
 
 interface TeamHeaderProps {
@@ -23,6 +24,31 @@ export const TeamHeader: React.FC<TeamHeaderProps> = ({
   showRoleSwitcher = true,
 }) => {
   const { role, switchRole, team } = useAppContext();
+  const [bannerMessage, setBannerMessage] = useState('');
+  const [showBanner, setShowBanner] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const handleRoleSwitch = (nextRole: typeof roleOptions[number]['value']) => {
+    if (nextRole === role) {
+      return;
+    }
+    switchRole(nextRole);
+    const label = roleOptions.find((item) => item.value === nextRole)?.label ?? 'Member';
+    setBannerMessage(`Viewing as ${label} — some tools are hidden`);
+    setShowBanner(true);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => setShowBanner(false), 2000);
+  };
 
   return (
     <View style={[styles.container, compact && styles.compact]}>
@@ -42,12 +68,13 @@ export const TeamHeader: React.FC<TeamHeaderProps> = ({
                 key={item.value}
                 label={item.label}
                 active={role === item.value}
-                onPress={() => switchRole(item.value)}
+                onPress={() => handleRoleSwitch(item.value)}
                 style={styles.roleChip}
                 tone={role === item.value ? 'gold' : 'neutral'}
               />
             ))}
           </View>
+          <ModeBannerToast message={bannerMessage} visible={showBanner} />
         </View>
       )}
     </View>

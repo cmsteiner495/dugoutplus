@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { TeamHeader } from '../components/ui/TeamHeader';
@@ -10,11 +11,18 @@ import { theme } from '../theme';
 
 export const MoreScreen: React.FC = () => {
   const { team } = useAppContext();
+  const scrollRef = useRef<ScrollView>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <TeamHeader subtitle="More" />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll}>
         <Card style={styles.card}>
           <View style={styles.aboutRow}>
             <TeamLogo size={48} />

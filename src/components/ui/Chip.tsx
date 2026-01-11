@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
 import { theme } from '../../theme';
 
 interface ChipProps {
@@ -9,6 +9,7 @@ interface ChipProps {
   style?: ViewStyle;
   tone?: 'neutral' | 'gold' | 'dark';
   disabled?: boolean;
+  enablePressAnimation?: boolean;
 }
 
 export const Chip: React.FC<ChipProps> = ({
@@ -18,18 +19,47 @@ export const Chip: React.FC<ChipProps> = ({
   style,
   tone = 'neutral',
   disabled,
+  enablePressAnimation,
 }) => {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    if (!enablePressAnimation) {
+      return;
+    }
+    Animated.spring(scale, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      speed: 20,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    if (!enablePressAnimation) {
+      return;
+    }
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
-      style={[styles.chip, styles[tone], active && styles.active, disabled && styles.disabled, style]}
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={0.8}
-    >
-      <Text style={[styles.text, styles[`${tone}Text`], active && styles.activeText]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
+    <Animated.View style={enablePressAnimation ? { transform: [{ scale }] } : undefined}>
+      <TouchableOpacity
+        style={[styles.chip, styles[tone], active && styles.active, disabled && styles.disabled, style]}
+        onPress={onPress}
+        disabled={disabled}
+        activeOpacity={0.8}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <Text style={[styles.text, styles[`${tone}Text`], active && styles.activeText]}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

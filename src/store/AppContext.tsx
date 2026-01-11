@@ -69,11 +69,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString(),
       confirmations: [],
       type: 'announcement',
+      category: 'Announcement',
+      isOfficial: true,
     };
     setMessages((prev) => [newAnnouncement, ...prev]);
   };
 
   const postMessage: AppActions['postMessage'] = (channelId, content) => {
+    const currentMember = members.find((member) => member.id === currentMemberId);
+    const isOfficial = role === 'coach' || (role === 'staff' && currentMember?.authorized);
     const newMessage: Message = {
       id: `m-${Date.now()}`,
       channelId,
@@ -81,6 +85,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString(),
       content,
       type: 'text',
+      category: 'General',
+      isOfficial,
     };
     setMessages((prev) => [newMessage, ...prev]);
   };

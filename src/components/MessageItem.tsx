@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { AnnouncementMessage, Member, Message } from '../models/types';
+import { AnnouncementMessage, Member, Message, MessageCategory } from '../models/types';
 import { theme } from '../theme';
 import { Button } from './ui/Button';
 import { Chip } from './ui/Chip';
@@ -12,6 +12,7 @@ interface MessageItemProps {
   onConfirm?: (messageId: string) => void;
   currentMemberId: string;
   totalMembers?: number;
+  onQuickAction?: (message: Message, action: string) => void;
 }
 
 export const MessageItem: React.FC<MessageItemProps> = ({
@@ -21,8 +22,29 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   onConfirm,
   currentMemberId,
   totalMembers,
+  onQuickAction,
 }) => {
   const timestamp = new Date(message.createdAt).toLocaleString();
+  const quickActions = useMemo(() => {
+    if (message.type !== 'text') {
+      return [];
+    }
+    const content = message.content.toLowerCase();
+    const actions = new Set<string>();
+    if (content.includes('carpool') || content.includes('drive')) {
+      actions.add('I can drive');
+      actions.add('Not available');
+    }
+    if (content.includes('volunteer') || content.includes('help')) {
+      actions.add('I can help');
+      actions.add('Not available');
+    }
+    return Array.from(actions);
+  }, [message]);
+
+  const categoryLabel: MessageCategory =
+    message.category ?? (message.type === 'announcement' ? 'Announcement' : 'General');
+  const badgeTone = categoryToTone(categoryLabel);
 
   if (message.type === 'announcement') {
     const announcement = message as AnnouncementMessage;
@@ -34,6 +56,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
         style={[
           styles.announcement,
           announcement.pinned && styles.pinnedAnnouncement,
+          message.isOfficial && styles.officialHighlight,
         ]}
       >
         <View style={styles.announcementHeader}>
@@ -42,7 +65,14 @@ export const MessageItem: React.FC<MessageItemProps> = ({
             {announcement.pinned && <Chip label="PINNED" tone="gold" />}
           </View>
           <View style={styles.officialRow}>
-            <Text style={styles.officialText}>🔒 Official</Text>
+            <View style={styles.badgeRow}>
+              <View style={[styles.typeBadge, styles.typeBadgeSpacing, styles[badgeTone]]}>
+                <Text style={[styles.typeBadgeText, styles[`${badgeTone}Text`]]}>
+                  {categoryLabel}
+                </Text>
+              </View>
+              <Text style={styles.officialText}>🔒 Official</Text>
+            </View>
             {announcement.tag && <Text style={styles.tag}>{announcement.tag}</Text>}
           </View>
         </View>
@@ -80,15 +110,51 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   }
 
   return (
-    <TouchableOpacity style={styles.message} onPress={() => onOpenThread(message.id)}>
+    <TouchableOpacity
+      style={[styles.message, message.isOfficial && styles.officialHighlight]}
+      onPress={() => onOpenThread(message.id)}
+    >
       <View style={styles.messageHeader}>
-        <Text style={styles.messageAuthor}>{author?.name ?? 'Member'}</Text>
+        <View style={styles.authorRow}>
+          <Text style={styles.messageAuthor}>{author?.name ?? 'Member'}</Text>
+          <View style={[styles.typeBadge, styles.typeBadgeAfter, styles[badgeTone]]}>
+            <Text style={[styles.typeBadgeText, styles[`${badgeTone}Text`]]}>
+              {categoryLabel}
+            </Text>
+          </View>
+        </View>
         <Text style={styles.metaText}>{timestamp}</Text>
       </View>
       <Text style={styles.messageBody}>{message.content}</Text>
+      {quickActions.length > 0 && (
+        <View style={styles.quickActions}>
+          {quickActions.map((action) => (
+            <Chip
+              key={action}
+              label={action}
+              onPress={() => onQuickAction?.(message, action)}
+              tone="gold"
+              style={styles.quickActionChip}
+            />
+          ))}
+        </View>
+      )}
       <Text style={styles.threadHint}>View thread</Text>
     </TouchableOpacity>
   );
+};
+
+const categoryToTone = (category: MessageCategory) => {
+  switch (category) {
+    case 'Logistics':
+      return 'toneLogistics';
+    case 'Volunteer':
+      return 'toneVolunteer';
+    case 'Announcement':
+      return 'toneAnnouncement';
+    default:
+      return 'toneGeneral';
+  }
 };
 
 const styles = StyleSheet.create({
@@ -103,6 +169,12 @@ const styles = StyleSheet.create({
   pinnedAnnouncement: {
     backgroundColor: theme.colors.warningBg,
     borderColor: theme.colors.warningBorder,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.accent,
+  },
+  officialHighlight: {
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.gold,
   },
   announcementHeader: {
     marginBottom: theme.spacing.sm,
@@ -122,6 +194,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   officialText: {
     fontSize: 12,
@@ -189,12 +265,65 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: theme.spacing.xs,
   },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   messageAuthor: {
     fontWeight: '600',
     color: theme.colors.textPrimary,
   },
   messageBody: {
     color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.sm,
+  },
+  typeBadge: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: theme.radius.round,
+  },
+  typeBadgeSpacing: {
+    marginRight: theme.spacing.sm,
+  },
+  typeBadgeAfter: {
+    marginLeft: theme.spacing.sm,
+  },
+  typeBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  toneAnnouncement: {
+    backgroundColor: theme.colors.warningBg,
+  },
+  toneAnnouncementText: {
+    color: theme.colors.warning,
+  },
+  toneLogistics: {
+    backgroundColor: theme.colors.background,
+  },
+  toneLogisticsText: {
+    color: theme.colors.textSecondary,
+  },
+  toneVolunteer: {
+    backgroundColor: theme.colors.goldMuted,
+  },
+  toneVolunteerText: {
+    color: theme.colors.primaryTextOnPrimary,
+  },
+  toneGeneral: {
+    backgroundColor: theme.colors.border,
+  },
+  toneGeneralText: {
+    color: theme.colors.textSecondary,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: theme.spacing.sm,
+  },
+  quickActionChip: {
+    marginRight: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
   },
   threadHint: {

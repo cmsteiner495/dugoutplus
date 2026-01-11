@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,6 +11,7 @@ import {
   Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { ChannelPills } from '../components/ChannelPills';
 import { MessageItem } from '../components/MessageItem';
 import { ThreadModal } from '../components/ThreadModal';
@@ -22,6 +23,7 @@ import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
 import { TeamHeader } from '../components/ui/TeamHeader';
 import { Toast } from '../components/ui/Toast';
+import { LockedAction } from '../components/ui/LockedAction';
 
 export const ChatScreen: React.FC = () => {
   const {
@@ -47,6 +49,13 @@ export const ChatScreen: React.FC = () => {
   const [pinned, setPinned] = useState(false);
   const [requiresConfirmation, setRequiresConfirmation] = useState(true);
   const [attachments, setAttachments] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
 
   const isOfficialChannel = channels.find((c) => c.id === activeChannelId)?.isOfficial;
   const currentMember = members.find((member) => member.id === currentMemberId);
@@ -99,11 +108,20 @@ export const ChatScreen: React.FC = () => {
     setTimeout(() => setToastMessage(''), 1800);
   };
 
+  const handleQuickAction = (messageId: string, action: string) => {
+    const message = messages.find((item) => item.id === messageId);
+    if (!message) {
+      return;
+    }
+    const authorName = currentMember?.name ?? 'Member';
+    postMessage(message.channelId, `✅ ${authorName}: ${action}`);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <TeamHeader subtitle="Team chat" />
       <ChannelPills channels={channels} activeId={activeChannelId} onSelect={setActiveChannelId} />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll}>
         {isOfficialChannel && (
           <View style={styles.identityBar}>
             <Text style={styles.identityText}>Official announcements channel</Text>
@@ -131,6 +149,7 @@ export const ChatScreen: React.FC = () => {
             onConfirm={handleConfirm}
             currentMemberId={currentMemberId}
             totalMembers={members.length}
+            onQuickAction={(item, action) => handleQuickAction(item.id, action)}
           />
         ))}
       </ScrollView>
@@ -197,6 +216,9 @@ export const ChatScreen: React.FC = () => {
               <Text style={styles.restrictedText}>
                 Only coaches/authorized staff can post official updates.
               </Text>
+              <View style={styles.lockedAction}>
+                <LockedAction label="Post official update" message="Coach access only" />
+              </View>
             </Card>
           )
         ) : (
@@ -300,5 +322,8 @@ const styles = StyleSheet.create({
   },
   restrictedText: {
     color: theme.colors.textSecondary,
+  },
+  lockedAction: {
+    marginTop: theme.spacing.md,
   },
 });

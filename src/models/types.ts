@@ -11,9 +11,13 @@ export interface Member {
   name: string;
   role: Role;
   authorized?: boolean;
+  permissions?: string[];
+  emergencyContactOnFile?: boolean;
 }
 
 export type ChannelType = 'Announcements' | 'Team Chat' | 'Logistics';
+
+export type MessageCategory = 'Logistics' | 'Announcement' | 'General' | 'Volunteer';
 
 export interface Channel {
   id: string;
@@ -29,6 +33,8 @@ export interface MessageBase {
   createdAt: string;
   content: string;
   type: 'text' | 'announcement';
+  category?: MessageCategory;
+  isOfficial?: boolean;
 }
 
 export interface AnnouncementMessage extends MessageBase {
@@ -58,6 +64,13 @@ export interface RSVP {
   status: RSVPStatus;
 }
 
+export type MissingStatus = 'Not responded' | 'No';
+
+export interface MissingResponse {
+  name: string;
+  status: MissingStatus;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -65,4 +78,5 @@ export interface Event {
   startsAt: string;
   notes?: string;
   rsvps: RSVP[];
+  missingResponses?: MissingResponse[];
 }
