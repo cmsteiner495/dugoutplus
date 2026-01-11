@@ -19,6 +19,8 @@ export type ChannelType = 'Announcements' | 'Team Chat' | 'Logistics';
 
 export type MessageCategory = 'Logistics' | 'Announcement' | 'General' | 'Volunteer';
 
+export type EventType = 'Practice' | 'Game' | 'Other';
+
 export interface Channel {
   id: string;
   name: string;
@@ -35,6 +37,7 @@ export interface MessageBase {
   type: 'text' | 'announcement';
   category?: MessageCategory;
   isOfficial?: boolean;
+  resolved?: boolean;
 }
 
 export interface AnnouncementMessage extends MessageBase {
@@ -45,6 +48,7 @@ export interface AnnouncementMessage extends MessageBase {
   requiresConfirmation: boolean;
   confirmations: string[];
   attachments?: string[];
+  acknowledgedBy?: string[];
 }
 
 export type Message = MessageBase | AnnouncementMessage;
@@ -76,7 +80,21 @@ export interface Event {
   title: string;
   location: string;
   startsAt: string;
+  type: EventType;
   notes?: string;
+  coachNotes?: string;
+  whatToBring?: string[];
   rsvps: RSVP[];
   missingResponses?: MissingResponse[];
+}
+
+export interface VolunteerNeed {
+  id: string;
+  title: string;
+  description: string;
+  eventId?: string;
+  slotsNeeded: number;
+  volunteers: string[];
+  declinedBy?: string[];
+  status: 'Open' | 'Resolved';
 }

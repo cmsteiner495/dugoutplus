@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -11,10 +12,9 @@ import {
   Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { ChannelPills } from '../components/ChannelPills';
 import { MessageItem } from '../components/MessageItem';
-import { ThreadModal } from '../components/ThreadModal';
 import { AnnouncementMessage } from '../models/types';
 import { useAppContext } from '../store/AppContext';
 import { theme } from '../theme';
@@ -24,25 +24,40 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { TeamHeader } from '../components/ui/TeamHeader';
 import { Toast } from '../components/ui/Toast';
 import { LockedAction } from '../components/ui/LockedAction';
+import { ThreadScreen } from './ThreadScreen';
+import { VolunteerBoardScreen } from './VolunteerBoardScreen';
+
+interface ChatRouteParams {
+  channelId?: string;
+  threadMessageId?: string;
+}
 
 export const ChatScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const {
     channels,
     messages,
-    replies,
     members,
     role,
     currentMemberId,
     postAnnouncement,
     postMessage,
-    addReply,
     confirmAnnouncement,
+    acknowledgeAnnouncement,
+    toggleAnnouncementPin,
+    draftMessages,
+    clearDraftMessage,
+    lastSeenByChannel,
+    markChannelSeen,
+    markAllChannelsSeen,
   } = useAppContext();
 
   const [activeChannelId, setActiveChannelId] = useState(channels[0]?.id ?? '');
   const [composer, setComposer] = useState('');
-  const [threadMessageId, setThreadMessageId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState('');
+  const [threadMessageId, setThreadMessageId] = useState<string | null>(null);
+  const [showVolunteerBoard, setShowVolunteerBoard] = useState(false);
 
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
@@ -54,20 +69,50 @@ export const ChatScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       scrollRef.current?.scrollTo({ y: 0, animated: false });
-    }, [])
+      if (activeChannelId) {
+        markChannelSeen(activeChannelId);
+      }
+    }, [activeChannelId, markChannelSeen])
   );
+
+  useEffect(() => {
+    if (activeChannelId) {
+      markChannelSeen(activeChannelId);
+    }
+  }, [activeChannelId, markChannelSeen]);
+
+  useEffect(() => {
+    const params = route.params as ChatRouteParams | undefined;
+    if (params?.channelId && params.channelId !== activeChannelId) {
+      setActiveChannelId(params.channelId);
+    }
+    if (params?.threadMessageId) {
+      setThreadMessageId(params.threadMessageId);
+      navigation.setParams({ threadMessageId: undefined } as never);
+    }
+  }, [route.params, activeChannelId, navigation]);
 
   const isOfficialChannel = channels.find((c) => c.id === activeChannelId)?.isOfficial;
   const currentMember = members.find((member) => member.id === currentMemberId);
   const canPostAnnouncement =
     role === 'coach' || (role === 'staff' && currentMember?.authorized);
 
-  const filteredMessages = useMemo(
-    () => messages.filter((message) => message.channelId === activeChannelId),
-    [messages, activeChannelId]
-  );
+  const filteredMessages = useMemo(() => {
+    const channelMessages = messages.filter((message) => message.channelId === activeChannelId);
+    if (!isOfficialChannel) {
+      return channelMessages;
+    }
+    return [...channelMessages].sort((a, b) => {
+      const aPinned = a.type === 'announcement' && (a as AnnouncementMessage).pinned;
+      const bPinned = b.type === 'announcement' && (b as AnnouncementMessage).pinned;
+      if (aPinned !== bPinned) {
+        return aPinned ? -1 : 1;
+      }
+      return b.createdAt.localeCompare(a.createdAt);
+    });
+  }, [messages, activeChannelId, isOfficialChannel]);
 
-  const activeMessage = messages.find((message) => message.id === threadMessageId);
+  const lastSeen = lastSeenByChannel[activeChannelId] ?? '';
 
   const handleSend = () => {
     if (!composer.trim()) {
@@ -117,11 +162,30 @@ export const ChatScreen: React.FC = () => {
     postMessage(message.channelId, `✅ ${authorName}: ${action}`);
   };
 
+  useEffect(() => {
+    const draft = draftMessages[activeChannelId];
+    if (draft) {
+      if (isOfficialChannel) {
+        setTitle((prev) => prev || 'RSVP Reminder');
+        setComposer(draft);
+      } else {
+        setComposer(draft);
+      }
+      clearDraftMessage(activeChannelId);
+    }
+  }, [activeChannelId, draftMessages, clearDraftMessage, isOfficialChannel]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <TeamHeader subtitle="Team chat" />
       <ChannelPills channels={channels} activeId={activeChannelId} onSelect={setActiveChannelId} />
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll}>
+        <Card style={styles.volunteerCard}>
+          <Text style={styles.sectionTitle}>Volunteer board</Text>
+          <Text style={styles.helperText}>Check the latest needs and sign up quickly.</Text>
+          <Button label="Open volunteer board" onPress={() => setShowVolunteerBoard(true)} />
+        </Card>
+
         {isOfficialChannel && (
           <View style={styles.identityBar}>
             <Text style={styles.identityText}>Official announcements channel</Text>
@@ -147,9 +211,13 @@ export const ChatScreen: React.FC = () => {
             author={members.find((member) => member.id === message.authorId)}
             onOpenThread={setThreadMessageId}
             onConfirm={handleConfirm}
+            onAcknowledge={role !== 'coach' ? acknowledgeAnnouncement : undefined}
+            onTogglePin={role === 'coach' ? toggleAnnouncementPin : undefined}
+            canPin={role === 'coach'}
             currentMemberId={currentMemberId}
             totalMembers={members.length}
             onQuickAction={(item, action) => handleQuickAction(item.id, action)}
+            isNew={message.createdAt > lastSeen}
           />
         ))}
       </ScrollView>
@@ -158,7 +226,14 @@ export const ChatScreen: React.FC = () => {
         {isOfficialChannel ? (
           canPostAnnouncement ? (
             <Card style={styles.announcementComposer}>
-              <Text style={styles.sectionTitle}>Create announcement</Text>
+              <View style={styles.composerHeader}>
+                <Text style={styles.sectionTitle}>Create announcement</Text>
+                <Button
+                  label="Mark all read"
+                  onPress={markAllChannelsSeen}
+                  variant="secondary"
+                />
+              </View>
               <TextInput
                 style={styles.input}
                 placeholder="Title (required)"
@@ -223,6 +298,14 @@ export const ChatScreen: React.FC = () => {
           )
         ) : (
           <View style={styles.composer}>
+            <View style={styles.composerHeader}>
+              <Text style={styles.sectionTitle}>Message</Text>
+              <Button
+                label="Mark all read"
+                onPress={markAllChannelsSeen}
+                variant="secondary"
+              />
+            </View>
             <TextInput
               style={styles.input}
               placeholder="Message"
@@ -235,19 +318,23 @@ export const ChatScreen: React.FC = () => {
         )}
       </KeyboardAvoidingView>
 
-      <ThreadModal
+      <Modal
         visible={!!threadMessageId}
-        onClose={() => setThreadMessageId(null)}
-        replies={replies.filter((reply) => reply.messageId === threadMessageId)}
-        members={members}
-        message={activeMessage}
-        totalMembers={members.length}
-        onSend={(content) => {
-          if (threadMessageId) {
-            addReply(threadMessageId, content);
-          }
-        }}
-      />
+        animationType="slide"
+        onRequestClose={() => setThreadMessageId(null)}
+      >
+        {threadMessageId ? (
+          <ThreadScreen messageId={threadMessageId} onClose={() => setThreadMessageId(null)} />
+        ) : null}
+      </Modal>
+
+      <Modal
+        visible={showVolunteerBoard}
+        animationType="slide"
+        onRequestClose={() => setShowVolunteerBoard(false)}
+      >
+        <VolunteerBoardScreen onClose={() => setShowVolunteerBoard(false)} />
+      </Modal>
 
       <Toast message={toastMessage} visible={!!toastMessage} />
     </SafeAreaView>
@@ -279,6 +366,9 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: theme.spacing.xs,
   },
+  volunteerCard: {
+    marginBottom: theme.spacing.lg,
+  },
   announcementComposer: {
     marginHorizontal: theme.spacing.lg,
     marginBottom: theme.spacing.md,
@@ -287,6 +377,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: theme.spacing.sm,
     color: theme.colors.textPrimary,
+  },
+  helperText: {
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
   },
   input: {
     borderWidth: 1,
@@ -325,5 +419,10 @@ const styles = StyleSheet.create({
   },
   lockedAction: {
     marginTop: theme.spacing.md,
+  },
+  composerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
