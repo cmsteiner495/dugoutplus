@@ -2,6 +2,7 @@
   "expo": {
     "name": "Dugout",
     "slug": "dugout",
+    "newArchEnabled": false,
     "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./src/assets/SingLogo.png",
