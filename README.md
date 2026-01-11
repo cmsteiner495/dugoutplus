@@ -6,20 +6,28 @@ Mobile-first MVP for youth baseball team management and structured communication
 
 ```bash
 npm install
-npx expo start
+npm run start
 ```
+
+To clear the Expo cache:
+
+```bash
+npm run start:clear
+```
+
+> Tip: Use `npx expo install` for Expo-managed packages to keep versions aligned.
 
 ## Project structure
 
 ```
 /src
   /assets        Team logo + assets wrapper
-  /components    Reusable UI pieces (Card, Chip, TeamHeader, etc.)
+  /components    Feature components + UI primitives
   /data          Mock seed data
   /models        TypeScript types
   /screens       Home, Schedule, Chat, Roster, More
   /store         Context state + actions
-  /utils         Theme + helpers
+  /theme         Design tokens
 ```
 
 ## Notes

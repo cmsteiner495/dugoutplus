@@ -1,8 +1,8 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Channel } from '../models/types';
-import { theme } from '../utils/theme';
-import { Chip } from './Chip';
+import { theme } from '../theme';
+import { Chip } from './ui/Chip';
 
 interface ChannelPillsProps {
   channels: Channel[];
@@ -25,6 +25,7 @@ export const ChannelPills: React.FC<ChannelPillsProps> = ({
             active={channel.id === activeId}
             onPress={() => onSelect(channel.id)}
             style={styles.chip}
+            tone={channel.id === activeId ? 'gold' : 'neutral'}
           />
         ))}
       </ScrollView>
@@ -35,8 +36,10 @@ export const ChannelPills: React.FC<ChannelPillsProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
   chip: {
     marginRight: theme.spacing.sm,

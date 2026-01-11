@@ -9,7 +9,7 @@ import { ChatScreen } from './src/screens/ChatScreen';
 import { RosterScreen } from './src/screens/RosterScreen';
 import { MoreScreen } from './src/screens/MoreScreen';
 import { AppProvider } from './src/store/AppContext';
-import { theme } from './src/utils/theme';
+import { theme } from './src/theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,7 +21,7 @@ export default function App() {
           <Tab.Navigator
             screenOptions={{
               headerShown: false,
-              tabBarActiveTintColor: theme.colors.primary,
+              tabBarActiveTintColor: theme.colors.nearBlack,
             }}
           >
             <Tab.Screen name="Home" component={HomeScreen} />

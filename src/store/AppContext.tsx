@@ -1,10 +1,17 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { channels as seedChannels, events as seedEvents, members as seedMembers, messages as seedMessages, replies as seedReplies, team as seedTeam } from '../data/seed';
-import { AnnouncementMessage, Event, Message, Reply, Role, RSVPStatus } from '../models/types';
+import {
+  channels as seedChannels,
+  events as seedEvents,
+  members as seedMembers,
+  messages as seedMessages,
+  replies as seedReplies,
+  team as seedTeam,
+} from '../data/seed';
+import { AnnouncementMessage, Event, Message, Reply, Role, RSVPStatus, Team } from '../models/types';
 
 interface AppState {
   role: Role;
-  teamId: string;
+  team: Team;
   members: typeof seedMembers;
   channels: typeof seedChannels;
   messages: Message[];
@@ -27,15 +34,15 @@ interface AppContextValue extends AppState, AppActions {
 }
 
 const roleMemberMap: Record<Role, string> = {
-  Coach: 'm1',
-  Staff: 'm2',
-  Parent: 'm4',
+  coach: 'm1',
+  staff: 'm2',
+  parent: 'm4',
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [role, setRole] = useState<Role>('Coach');
+  const [role, setRole] = useState<Role>('coach');
   const [members, setMembers] = useState(seedMembers);
   const [messages, setMessages] = useState<Message[]>(seedMessages);
   const [replies, setReplies] = useState<Reply[]>(seedReplies);
@@ -127,7 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value = useMemo<AppContextValue>(
     () => ({
       role,
-      teamId: seedTeam.id,
+      team: seedTeam,
       members,
       channels: seedChannels,
       messages,
