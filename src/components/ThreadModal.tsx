@@ -100,6 +100,7 @@ export const ThreadModal: React.FC<ThreadModalProps> = ({
                 placeholder="Write a reply"
                 value={text}
                 onChangeText={setText}
+                placeholderTextColor={theme.colors.textSecondary}
               />
               <Button label="Send" onPress={handleSend} />
             </View>
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     padding: theme.spacing.lg,
     borderTopLeftRadius: theme.radius.large,
     borderTopRightRadius: theme.radius.large,
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
   close: {
-    color: theme.colors.nearBlack,
+    color: theme.colors.accent,
     fontWeight: '600',
   },
   body: {
@@ -185,6 +186,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.medium,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
   },
 });

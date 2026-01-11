@@ -93,16 +93,16 @@ export const MessageItem: React.FC<MessageItemProps> = ({
 
 const styles = StyleSheet.create({
   announcement: {
-    backgroundColor: '#FFF7E0',
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.large,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: theme.colors.primaryGold,
+    borderColor: theme.colors.border,
   },
   pinnedAnnouncement: {
-    borderColor: theme.colors.nearBlack,
-    borderWidth: 2,
+    backgroundColor: theme.colors.warningBg,
+    borderColor: theme.colors.warningBorder,
   },
   announcementHeader: {
     marginBottom: theme.spacing.sm,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   officialText: {
     fontSize: 12,
     fontWeight: '700',
-    color: theme.colors.mutedBlack,
+    color: theme.colors.textSecondary,
   },
   tag: {
     fontSize: 12,
@@ -173,11 +173,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   threadLink: {
-    color: theme.colors.nearBlack,
+    color: theme.colors.accent,
     fontWeight: '600',
   },
   message: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     padding: theme.spacing.lg,
     borderRadius: theme.radius.medium,
     marginBottom: theme.spacing.md,

@@ -2,6 +2,7 @@ import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ScheduleScreen } from './src/screens/ScheduleScreen';
@@ -16,12 +17,18 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   return (
     <SafeAreaProvider>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
       <AppProvider>
         <NavigationContainer>
           <Tab.Navigator
             screenOptions={{
               headerShown: false,
-              tabBarActiveTintColor: theme.colors.nearBlack,
+              tabBarActiveTintColor: theme.colors.tabActive,
+              tabBarInactiveTintColor: theme.colors.tabInactive,
+              tabBarStyle: {
+                backgroundColor: theme.colors.surface,
+                borderTopColor: theme.colors.border,
+              },
             }}
           >
             <Tab.Screen name="Home" component={HomeScreen} />

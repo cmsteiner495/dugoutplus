@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
   action: {
     fontSize: 13,
     fontWeight: '600',
-    color: theme.colors.mutedBlack,
+    color: theme.colors.accent,
   },
 });

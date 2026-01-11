@@ -38,15 +38,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primary: {
-    backgroundColor: theme.colors.primaryGold,
+    backgroundColor: theme.colors.buttonPrimaryBg,
   },
   secondary: {
-    backgroundColor: theme.colors.nearBlack,
+    backgroundColor: theme.colors.buttonSecondaryBg,
+    borderWidth: 1,
+    borderColor: theme.colors.accent,
   },
   ghost: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.accent,
   },
   disabled: {
     opacity: 0.6,
@@ -56,12 +58,12 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   primaryText: {
-    color: theme.colors.nearBlack,
+    color: theme.colors.buttonPrimaryText,
   },
   secondaryText: {
-    color: '#FFFFFF',
+    color: theme.colors.buttonSecondaryText,
   },
   ghostText: {
-    color: theme.colors.textPrimary,
+    color: theme.colors.buttonSecondaryText,
   },
 });

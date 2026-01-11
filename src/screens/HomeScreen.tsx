@@ -122,16 +122,16 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   pendingCallout: {
-    backgroundColor: theme.colors.mutedGold,
+    backgroundColor: theme.colors.warningBg,
     padding: theme.spacing.md,
     borderRadius: theme.radius.medium,
     borderWidth: 1,
-    borderColor: theme.colors.primaryGold,
+    borderColor: theme.colors.warningBorder,
   },
   pendingText: {
     marginBottom: theme.spacing.sm,
     fontWeight: '600',
-    color: theme.colors.nearBlack,
+    color: theme.colors.textPrimary,
   },
   mutedText: {
     color: theme.colors.textSecondary,
@@ -155,8 +155,9 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   pinnedCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primaryGold,
+    borderWidth: 1,
+    borderColor: theme.colors.warningBorder,
+    backgroundColor: theme.colors.warningBg,
   },
   pinnedHeader: {
     flexDirection: 'row',

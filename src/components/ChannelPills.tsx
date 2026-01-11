@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },

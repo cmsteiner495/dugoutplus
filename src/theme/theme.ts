@@ -2,7 +2,12 @@ import { colors } from './colors';
 import { radius } from './radius';
 import { shadow } from './shadow';
 import { spacing } from './spacing';
-import { theme } from './theme';
 import { typography } from './typography';
 
-export { colors, radius, shadow, spacing, theme, typography };
+export const theme = {
+  colors,
+  spacing,
+  radius,
+  typography,
+  shadow,
+};
