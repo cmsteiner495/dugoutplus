@@ -7,10 +7,36 @@ export const team: Team = {
 };
 
 export const members: Member[] = [
-  { id: 'm1', name: 'Coach Taylor', role: 'coach' },
-  { id: 'm2', name: 'Jordan Miles', role: 'staff', authorized: true },
-  { id: 'm3', name: 'Sam Patel', role: 'staff', authorized: false },
-  { id: 'm4', name: 'Alex Morgan', role: 'parent' },
+  {
+    id: 'm1',
+    name: 'Coach Taylor',
+    role: 'coach',
+    permissions: ['post_updates', 'review_updates'],
+    emergencyContactOnFile: true,
+  },
+  {
+    id: 'm2',
+    name: 'Jordan Miles',
+    role: 'staff',
+    authorized: true,
+    permissions: ['post_updates', 'volunteer_lead'],
+    emergencyContactOnFile: true,
+  },
+  {
+    id: 'm3',
+    name: 'Sam Patel',
+    role: 'staff',
+    authorized: false,
+    permissions: ['check_in_support'],
+    emergencyContactOnFile: false,
+  },
+  {
+    id: 'm4',
+    name: 'Alex Morgan',
+    role: 'parent',
+    permissions: ['carpool', 'volunteer'],
+    emergencyContactOnFile: true,
+  },
 ];
 
 export const channels: Channel[] = [
@@ -27,6 +53,8 @@ export const messages: Message[] = [
     createdAt: new Date().toISOString(),
     content: 'Uniform pickup is Friday at 4pm in the clubhouse.',
     type: 'announcement',
+    category: 'Announcement',
+    isOfficial: true,
     title: 'Uniform Pickup',
     tag: 'Info',
     pinned: true,
@@ -41,6 +69,8 @@ export const messages: Message[] = [
     createdAt: new Date().toISOString(),
     content: 'Please confirm attendance for Saturday game day.',
     type: 'announcement',
+    category: 'Announcement',
+    isOfficial: true,
     title: 'Saturday Game Day',
     tag: 'Action',
     pinned: false,
@@ -55,6 +85,28 @@ export const messages: Message[] = [
     createdAt: new Date().toISOString(),
     content: 'Carpool spots still available for Sunday.',
     type: 'text',
+    category: 'Logistics',
+    isOfficial: false,
+  },
+  {
+    id: 'm6',
+    channelId: 'c3',
+    authorId: 'm2',
+    createdAt: new Date().toISOString(),
+    content: 'Need two drivers for the Saturday away game.',
+    type: 'text',
+    category: 'Logistics',
+    isOfficial: true,
+  },
+  {
+    id: 'm7',
+    channelId: 'c2',
+    authorId: 'm3',
+    createdAt: new Date().toISOString(),
+    content: 'Looking for volunteer help with snack shack this week.',
+    type: 'text',
+    category: 'Volunteer',
+    isOfficial: false,
   },
 ];
 
@@ -80,6 +132,10 @@ export const events: Event[] = [
       { memberId: 'm2', status: 'Going' },
       { memberId: 'm4', status: 'Maybe' },
     ],
+    missingResponses: [
+      { name: 'Luis Romero', status: 'Not responded' },
+      { name: 'Kai Brooks', status: 'No' },
+    ],
   },
   {
     id: 'e2',
@@ -92,5 +148,18 @@ export const events: Event[] = [
       { memberId: 'm2', status: 'Maybe' },
       { memberId: 'm4', status: 'No' },
     ],
+    missingResponses: [
+      { name: 'Elliot Shaw', status: 'Not responded' },
+      { name: 'Maya Ortiz', status: 'No' },
+    ],
+  },
+  {
+    id: 'e3',
+    title: 'Skills clinic',
+    location: 'South Training Facility',
+    startsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 9).toISOString(),
+    notes: 'Optional extra reps. Bring your glove.',
+    rsvps: [{ memberId: 'm1', status: 'Going' }],
+    missingResponses: [{ name: 'Riley Knox', status: 'Not responded' }],
   },
 ];

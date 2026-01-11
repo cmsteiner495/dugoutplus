@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { ScrollView, StyleSheet, Text, View, Vibration } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../components/ui/Card';
 import { TeamHeader } from '../components/ui/TeamHeader';
@@ -9,11 +9,22 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { useAppContext } from '../store/AppContext';
 import { theme } from '../theme';
 import { RSVPStatus } from '../models/types';
+import { SmartSummaryStrip } from '../components/SmartSummaryStrip';
+import { AttendanceMeter } from '../components/AttendanceMeter';
+import { LockedAction } from '../components/ui/LockedAction';
+import { useFocusEffect } from '@react-navigation/native';
 
 const rsvpOptions: RSVPStatus[] = ['Going', 'Maybe', 'No'];
 
 export const HomeScreen: React.FC = () => {
-  const { events, messages, currentMemberId, setRsvp } = useAppContext();
+  const { events, messages, currentMemberId, setRsvp, role, members } = useAppContext();
+  const scrollRef = useRef<ScrollView>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
 
   const nextEvent = useMemo(() => {
     return [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0];
@@ -37,11 +48,15 @@ export const HomeScreen: React.FC = () => {
   const currentStatus = nextEvent
     ? nextEvent.rsvps.find((rsvp) => rsvp.memberId === currentMemberId)?.status
     : undefined;
+  const currentMember = members.find((member) => member.id === currentMemberId);
+  const canReviewUpdates =
+    role === 'coach' || (role === 'staff' && currentMember?.authorized);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <TeamHeader subtitle="Home dashboard" />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <SmartSummaryStrip events={events} messages={messages} currentMemberId={currentMemberId} />
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll}>
         <Card style={styles.card}>
           <Text style={styles.sectionTitle}>Official updates</Text>
           {pendingConfirmations > 0 ? (
@@ -49,7 +64,11 @@ export const HomeScreen: React.FC = () => {
               <Text style={styles.pendingText}>
                 {pendingConfirmations} updates awaiting confirmation
               </Text>
-              <Button label="Review updates" onPress={() => {}} />
+              {canReviewUpdates ? (
+                <Button label="Review updates" onPress={() => {}} />
+              ) : (
+                <LockedAction label="Review updates" />
+              )}
             </View>
           ) : (
             <Text style={styles.mutedText}>All caught up on official updates.</Text>
@@ -65,14 +84,19 @@ export const HomeScreen: React.FC = () => {
               <Text style={styles.eventMeta}>
                 {new Date(nextEvent.startsAt).toLocaleString()}
               </Text>
+              <AttendanceMeter rsvps={nextEvent.rsvps} />
               <View style={styles.rsvpRow}>
                 {rsvpOptions.map((status) => (
                   <Chip
                     key={status}
                     label={status}
                     active={currentStatus === status}
-                    onPress={() => setRsvp(nextEvent.id, status)}
+                    onPress={() => {
+                      setRsvp(nextEvent.id, status);
+                      Vibration.vibrate(10);
+                    }}
                     style={styles.rsvpChip}
+                    enablePressAnimation
                   />
                 ))}
               </View>
@@ -158,6 +182,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.warningBorder,
     backgroundColor: theme.colors.warningBg,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.accent,
   },
   pinnedHeader: {
     flexDirection: 'row',
