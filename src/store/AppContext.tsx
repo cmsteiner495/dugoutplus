@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   channels as seedChannels,
   events as seedEvents,
@@ -334,19 +341,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const markChannelSeen: AppActions['markChannelSeen'] = (channelId) => {
+  const markChannelSeen: AppActions['markChannelSeen'] = useCallback((channelId) => {
     setLastSeenByChannel((prev) => ({
       ...prev,
       [channelId]: new Date().toISOString(),
     }));
-  };
+  }, []);
 
-  const markAllChannelsSeen: AppActions['markAllChannelsSeen'] = () => {
+  const markAllChannelsSeen: AppActions['markAllChannelsSeen'] = useCallback(() => {
     const now = new Date().toISOString();
     setLastSeenByChannel(
       Object.fromEntries(seedChannels.map((channel) => [channel.id, now]))
     );
-  };
+  }, []);
 
   const getUnreadCount: AppActions['getUnreadCount'] = (channelId) => {
     const lastSeen = lastSeenByChannel[channelId] ?? '';
@@ -401,6 +408,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       draftMessages,
       lastSeenByChannel,
       currentMemberId,
+      markChannelSeen,
+      markAllChannelsSeen,
     ]
   );
 
