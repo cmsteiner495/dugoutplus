@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: theme.spacing.lg,
     borderRadius: theme.radius.medium,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -44,14 +44,14 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: theme.radius.round,
-    backgroundColor: theme.colors.mutedGold,
+    backgroundColor: theme.colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing.md,
   },
   iconText: {
     fontWeight: '700',
-    color: theme.colors.nearBlack,
+    color: theme.colors.primaryTextOnPrimary,
   },
   title: {
     fontSize: 16,
@@ -69,10 +69,10 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radius.round,
-    backgroundColor: theme.colors.primaryGold,
+    backgroundColor: theme.colors.buttonPrimaryBg,
   },
   ctaText: {
     fontWeight: '600',
-    color: theme.colors.nearBlack,
+    color: theme.colors.buttonPrimaryText,
   },
 });

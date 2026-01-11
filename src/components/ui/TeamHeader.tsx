@@ -44,7 +44,7 @@ export const TeamHeader: React.FC<TeamHeaderProps> = ({
                 active={role === item.value}
                 onPress={() => switchRole(item.value)}
                 style={styles.roleChip}
-                tone="gold"
+                tone={role === item.value ? 'gold' : 'neutral'}
               />
             ))}
           </View>
@@ -56,7 +56,7 @@ export const TeamHeader: React.FC<TeamHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     padding: theme.spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,

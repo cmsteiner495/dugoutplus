@@ -35,6 +35,9 @@ export const RosterScreen: React.FC = () => {
               <Switch
                 value={!!authorized}
                 onValueChange={() => toggleStaffAuthorized(memberId)}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                thumbColor={theme.colors.primary}
+                ios_backgroundColor={theme.colors.border}
               />
             </View>
           ) : (

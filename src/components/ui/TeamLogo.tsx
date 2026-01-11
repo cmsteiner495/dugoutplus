@@ -32,7 +32,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ size = 52 }) => {
 
 const styles = StyleSheet.create({
   logoWrap: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -42,10 +42,10 @@ const styles = StyleSheet.create({
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.nearBlack,
+    backgroundColor: theme.colors.black,
   },
   fallbackText: {
-    color: theme.colors.primaryGold,
+    color: theme.colors.primary,
     fontWeight: '700',
   },
 });

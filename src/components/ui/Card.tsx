@@ -8,7 +8,7 @@ export const Card: React.FC<ViewProps> = ({ style, ...props }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.medium,
     padding: theme.spacing.lg,
     borderWidth: 1,

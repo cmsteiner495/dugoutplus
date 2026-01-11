@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     bottom: theme.spacing.xl,
     left: theme.spacing.lg,
     right: theme.spacing.lg,
-    backgroundColor: theme.colors.nearBlack,
+    backgroundColor: theme.colors.black,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radius.medium,
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     ...theme.shadow,
   },
   text: {
-    color: theme.colors.primaryGold,
+    color: theme.colors.primary,
     fontWeight: '600',
   },
 });

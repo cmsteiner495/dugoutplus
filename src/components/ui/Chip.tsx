@@ -26,7 +26,9 @@ export const Chip: React.FC<ChipProps> = ({
       disabled={disabled}
       activeOpacity={0.8}
     >
-      <Text style={[styles.text, active && styles.activeText]}>{label}</Text>
+      <Text style={[styles.text, styles[`${tone}Text`], active && styles.activeText]}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -39,20 +41,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   neutral: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.chipInactiveBg,
     borderColor: theme.colors.border,
   },
   gold: {
-    backgroundColor: theme.colors.mutedGold,
-    borderColor: theme.colors.primaryGold,
+    backgroundColor: theme.colors.accent,
+    borderColor: theme.colors.accent,
   },
   dark: {
-    backgroundColor: theme.colors.nearBlack,
-    borderColor: theme.colors.nearBlack,
+    backgroundColor: theme.colors.black,
+    borderColor: theme.colors.black,
   },
   active: {
-    backgroundColor: theme.colors.primaryGold,
-    borderColor: theme.colors.primaryGold,
+    backgroundColor: theme.colors.chipActiveBg,
+    borderColor: theme.colors.chipActiveBg,
   },
   disabled: {
     opacity: 0.6,
@@ -62,7 +64,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.textPrimary,
   },
+  neutralText: {
+    color: theme.colors.chipInactiveText,
+  },
+  goldText: {
+    color: theme.colors.primaryTextOnPrimary,
+  },
+  darkText: {
+    color: theme.colors.primary,
+  },
   activeText: {
-    color: theme.colors.nearBlack,
+    color: theme.colors.chipActiveText,
   },
 });

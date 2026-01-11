@@ -145,28 +145,49 @@ export const ChatScreen: React.FC = () => {
                 placeholder="Title (required)"
                 value={title}
                 onChangeText={setTitle}
+                placeholderTextColor={theme.colors.textSecondary}
               />
-              <TextInput style={styles.input} placeholder="Tag" value={tag} onChangeText={setTag} />
+              <TextInput
+                style={styles.input}
+                placeholder="Tag"
+                value={tag}
+                onChangeText={setTag}
+                placeholderTextColor={theme.colors.textSecondary}
+              />
               <TextInput
                 style={[styles.input, styles.inputBody]}
                 placeholder="Body"
                 value={composer}
                 onChangeText={setComposer}
                 multiline
+                placeholderTextColor={theme.colors.textSecondary}
               />
               <TextInput
                 style={styles.input}
                 placeholder="Attachments placeholder (comma separated)"
                 value={attachments}
                 onChangeText={setAttachments}
+                placeholderTextColor={theme.colors.textSecondary}
               />
               <View style={styles.toggleRow}>
                 <Text style={styles.toggleLabel}>Pinned</Text>
-                <Switch value={pinned} onValueChange={setPinned} />
+                <Switch
+                  value={pinned}
+                  onValueChange={setPinned}
+                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                  thumbColor={theme.colors.primary}
+                  ios_backgroundColor={theme.colors.border}
+                />
               </View>
               <View style={styles.toggleRow}>
                 <Text style={styles.toggleLabel}>Require confirmation</Text>
-                <Switch value={requiresConfirmation} onValueChange={setRequiresConfirmation} />
+                <Switch
+                  value={requiresConfirmation}
+                  onValueChange={setRequiresConfirmation}
+                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                  thumbColor={theme.colors.primary}
+                  ios_backgroundColor={theme.colors.border}
+                />
               </View>
               <Button label="Post announcement" onPress={handleAnnouncement} />
             </Card>
@@ -185,6 +206,7 @@ export const ChatScreen: React.FC = () => {
               placeholder="Message"
               value={composer}
               onChangeText={setComposer}
+              placeholderTextColor={theme.colors.textSecondary}
             />
             <Button label="Send" onPress={handleSend} />
           </View>
@@ -221,14 +243,14 @@ const styles = StyleSheet.create({
   },
   identityBar: {
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.mutedGold,
+    backgroundColor: theme.colors.warningBg,
     borderRadius: theme.radius.medium,
     marginBottom: theme.spacing.md,
     borderWidth: 1,
-    borderColor: theme.colors.primaryGold,
+    borderColor: theme.colors.warningBorder,
   },
   identityText: {
-    color: theme.colors.nearBlack,
+    color: theme.colors.textPrimary,
     fontWeight: '700',
   },
   identitySubtext: {
@@ -250,7 +272,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.medium,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
   },
   inputBody: {
     minHeight: 80,
@@ -270,7 +292,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     borderTopWidth: 1,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
   },
   restrictedCard: {
     marginHorizontal: theme.spacing.lg,
